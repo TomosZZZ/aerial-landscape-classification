@@ -1,0 +1,14 @@
+# Dane i duże pliki
+archive.zip
+AerialLandscape/
+dataset/
+data/
+
+# Śmieci Pythona i Notebooków
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.virtual_documents/
+
+# Pliki systemowe
+.DS_Store
