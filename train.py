@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import json
 
 from tqdm import tqdm
 from dataset import create_dataloaders
@@ -9,7 +10,7 @@ from model import AerialLandscapeCNN
 DATA_DIR = "/content/dataset/Aerial_Landscapes"
 LR = 0.001
 NUM_CLASSES = 15
-EPOCHS = 10
+EPOCHS = 50
 
 def main():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -23,6 +24,13 @@ def main():
   loss_fn = nn.CrossEntropyLoss()
 
   optimizer = optim.Adam(model.parameters(),lr=LR)
+
+  scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, 
+    mode='min',  
+    factor=0.1,    
+    patience=3  
+)
 
   history = {'train_loss': [], 'val_loss': [], 'train_acc': [], 'val_acc': []}
   model = model.to(device)
@@ -72,13 +80,23 @@ def main():
     v_loss = val_loss / len(val_loader)
     t_acc = train_correct / len(train_loader.dataset)
     v_acc = val_correct / len(val_loader.dataset)
-    
+
+    scheduler.step(v_loss)
+
     history['train_loss'].append(t_loss)
     history['val_loss'].append(v_loss)
     history['train_acc'].append(t_acc)
     history['val_acc'].append(v_acc)
-    
-    print(f"Summary Epoch {epoch+1}: Train Loss: {t_loss:.4f} | Val Loss: {v_loss:.4f} | Train Acc: {t_acc:.4f} | Val Acc: {v_acc:.4f}")
+
+    current_lr = optimizer.param_groups[0]['lr']
+    print(f"Summary Epoch {epoch+1}: LR: {current_lr:.6f} | Val Loss: {v_loss:.4f} | Val Acc: {v_acc:.4f}")
+  
+  torch.save(model.state_dict(), "aerial_model_v2.pth")
+  print("Model saved!")
+
+  with open("history.json", "w") as f:
+    json.dump(history, f)
+
 
 if __name__ == "__main__":
     main()

@@ -17,7 +17,18 @@ class AerialLandscapeCNN(nn.Module):
       nn.ReLU(),
       nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
     )
-
+    self.features3 = nn.Sequential(
+      nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+      nn.BatchNorm2d(64),
+      nn.ReLU(),
+      nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+    )
+    self.features4 = nn.Sequential(
+      nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+      nn.BatchNorm2d(128),
+      nn.ReLU(),
+      nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+    )
     self.flatten = nn.Flatten()
 
     self.classifier = nn.Sequential(
@@ -29,5 +40,5 @@ class AerialLandscapeCNN(nn.Module):
     )
 
   def forward(self,x):
-    return self.classifier(self.flatten(self.features2(self.features1(x))))
+    return self.classifier(self.flatten(self.features4(self.features3(self.features2(self.features1(x))))))
     
